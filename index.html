@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DEM/DSM Viewer</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .coordinate {
+            position: absolute;
+            bottom: 20px;
+            right: 40%;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background-color: #000000;
+            color: #fff;
+            border: 1px solid red;
+            border-radius: 0px;
+        }
+    </style>
+
+
+</head>
+
+
+<body>
+    <div id="map" >
+        <div class="leaflet-control coordinate";> </div>
+    </div>
+    <script>
+
+        // 地圖本身
+        var map = L.map('map').setView([25.05,121.5], 12);
+
+        // Basemap 基本底圖
+        var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                 })
+                 //tiles.addTo(map);
+            
+        var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                });
+                //Esri_WorldImagery.addTo(map);
+        var google_map = googleStreets = L.tileLayer('http://{s}.google.com/vt?lyrs=m&x={x}&y={y}&z={z}',{
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+                });
+                google_map.addTo(map);
+
+        // 符號 Maker
+        var myIcon = L.icon({
+                iconUrl: 'img/red_marker.png',
+                iconSize: [40, 40],
+                });
+
+        var singleMarker = L.marker([25.04778, 121.51722], { icon: myIcon, draggable: true })
+        console.log(singleMarker.toGeoJSON())
+        var popup = singleMarker.bindPopup('This is the Taipei Station. ' + singleMarker.getLatLng()).openPopup()
+        popup.addTo(map);
+
+        // 圖層顯示控制 Layercontroller
+        var baseLayers = {
+                "OpenStreetMap": tiles,
+                "Google Map": google_map,
+                "Esri World Imagery": Esri_WorldImagery
+                };
+        // 控制符號的顯示
+        var overlayMaps = {
+                "Marker": singleMarker
+                };
+        //把上面兩個加進去
+        L.control.layers(baseLayers, overlayMaps).addTo(map);
+
+        // 圖層事件 layer event
+
+            //滑鼠跑到圖層上
+        map.on('mouseover', function () {
+            console.log('your mouse is over the map')
+            })
+            //滑鼠移動到哪，坐標顯示
+        map.on('mousemove', function (e) {
+            document.getElementsByClassName('coordinate')[0].innerHTML = 'lat: ' + e.latlng.lat + 'lng: ' + e.latlng.lng;
+            console.log('lat: ' + e.latlng.lat, 'lng: ' + e.latlng.lng)
+            })
+
+        map.on('click', function (e) {
+            var coordText = 'Lat: ' + e.latlng.lat.toFixed(5) + ', Lng: ' + e.latlng.lng.toFixed(5);
+            var popup = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(coordText)
+                        .openOn(map);
+            });
+        
+
+
+    </script>
+</body>
+</html>
